@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eksdemo-mq
+  labels:
+    app: eksdemo-mq
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: eksdemo-mq
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: eksdemo-mq
+    spec:
+      serviceAccountName: eksdemo-mq
+      containers:
+      - image: 885629272022.dkr.ecr.us-east-1.amazonaws.com/eks-mq-demo:latest
+        imagePullPolicy: Always
+        name: eksdemo-mq
+        ports:
+          - containerPort: 8080
+            protocol: TCP
+        env:
+          - name: MQ_HOST
+            valueFrom:
+              secretKeyRef:
+                name: eks-mq-secret
+                key: mqhost
+          - name: MQ_USER_NAME
+            valueFrom:
+              secretKeyRef:
+                name: eks-mq-secret
+                key: mqusername
+          - name: MQ_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: eks-mq-secret
+                key: mqpassword
+
+
